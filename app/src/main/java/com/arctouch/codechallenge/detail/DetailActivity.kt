@@ -1,11 +1,12 @@
 package com.arctouch.codechallenge.detail
 
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import com.arctouch.codechallenge.R
+import com.arctouch.codechallenge.api.ApiManager.api
 import com.arctouch.codechallenge.api.TmdbApi
-import com.arctouch.codechallenge.base.BaseActivity
 import com.arctouch.codechallenge.model.Movie
 import com.arctouch.codechallenge.util.MovieImageUrlBuilder
 import com.bumptech.glide.Glide
@@ -17,7 +18,7 @@ import kotlinx.android.synthetic.main.content_detail.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-class DetailActivity : BaseActivity() {
+class DetailActivity : AppCompatActivity() {
 
     companion object {
         private val LOG_TAG = DetailActivity::class.java.simpleName
@@ -41,7 +42,7 @@ class DetailActivity : BaseActivity() {
         val movieId = intent.getLongExtra(EXTRA_MOVIE_ID, -1)
 
         if (movieId > -1) {
-            val obj = api.movie(movieId, TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE)
+            api.movie(movieId, TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe {

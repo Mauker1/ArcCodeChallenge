@@ -1,19 +1,21 @@
 package com.arctouch.codechallenge.home
 
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import com.arctouch.codechallenge.R
+import com.arctouch.codechallenge.api.ApiManager.api
 import com.arctouch.codechallenge.api.TmdbApi
-import com.arctouch.codechallenge.base.BaseActivity
 import com.arctouch.codechallenge.data.Cache
+import com.arctouch.codechallenge.model.UpcomingMoviesResponse
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.home_activity.*
 
 
-class HomeActivity : BaseActivity() {
+class HomeActivity : AppCompatActivity() {
 
     companion object {
         val LOG_TAG = HomeActivity::class.java.simpleName
@@ -43,7 +45,7 @@ class HomeActivity : BaseActivity() {
         loadMovies()
     }
 
-    // TODO - Save Activity state to avoid multiple downloads.
+    // TODO - Issue #8: Save Activity state to avoid multiple downloads.
 
     //end section
 
@@ -82,6 +84,11 @@ class HomeActivity : BaseActivity() {
             api.upcomingMovies(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, curPage, TmdbApi.DEFAULT_REGION)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
+                    .retry(3)
+                    .onErrorReturn {
+                        it.stackTrace
+                        UpcomingMoviesResponse(1, ArrayList(), 1, 0)
+                    }
                     .subscribe {
                         val moviesWithGenres = it.results.map { movie ->
                             movie.copy(genres = Cache.genres.filter { movie.genreIds?.contains(it.id) == true })

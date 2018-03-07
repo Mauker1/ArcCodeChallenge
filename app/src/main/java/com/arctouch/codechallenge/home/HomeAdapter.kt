@@ -1,11 +1,14 @@
 package com.arctouch.codechallenge.home
 
+import android.content.Context
+import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.arctouch.codechallenge.R
+import com.arctouch.codechallenge.detail.DetailActivity
 import com.arctouch.codechallenge.model.Movie
 import com.arctouch.codechallenge.util.MovieImageUrlBuilder
 import com.bumptech.glide.Glide
@@ -29,12 +32,17 @@ class HomeAdapter(private val movies: MutableList<Movie>) : RecyclerView.Adapter
                 .into(itemView.posterImageView)
 
             itemView.setOnClickListener {
-                onClick(movie)
+                onClick(it.context, movie)
             }
         }
 
-        private fun onClick(movie: Movie) {
+        private fun onClick(context: Context, movie: Movie) {
             Log.d(LOG_TAG, "onClick()")
+            val it = Intent(context, DetailActivity::class.java)
+
+            it.putExtra(DetailActivity.EXTRA_MOVIE_ID, movie.id.toLong())
+
+            context.startActivity(it)
         }
     }
 

@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">Code Challenge</string>
     <string name="movie_and_genres">%s - %s</string>
+
+    <!-- Detail Activity strings -->
+    <string name="stars_and_votes">%1$.1f (%2$d)</string>
+    <string name="title_activity_detail">DetailActivity</string>
+    <string name="act_detail_overview_title">Overview</string>
+    <string name="act_detail_release_date_title">Release Date</string>
+
+    <string name="action_settings">Settings</string>
 </resources>

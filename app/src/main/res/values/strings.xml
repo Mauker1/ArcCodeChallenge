@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Code Challenge</string>
+    <string name="movie_and_genres">%s - %s</string>
+
+    <!-- Detail Activity strings -->
+    <string name="stars_and_votes">%1$.1f (%2$d)</string>
+    <string name="title_activity_detail">DetailActivity</string>
+    <string name="act_detail_overview_title">Overview</string>
+    <string name="act_detail_release_date_title">Release Date</string>
+
+    <string name="action_search">Search</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_try_again">Try again</string>
+
+    <string name="no_upcoming_results">No upcoming movies were found.</string>
+    <string name="no_query_results">No movies were found.</string>
+
+    <!-- Material Search View Strings -->
+    <string name="search_hint_prompt">Search movie&#8230;</string>
+    <string name="voice_hint_prompt">Say a movie name</string>
+</resources>

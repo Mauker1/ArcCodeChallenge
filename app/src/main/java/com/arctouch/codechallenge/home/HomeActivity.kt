@@ -1,15 +1,26 @@
 package com.arctouch.codechallenge.home
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.support.annotation.StringRes
 import android.support.design.widget.Snackbar
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
+import android.text.TextUtils
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import br.com.mauker.materialsearchview.MaterialSearchView
 import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.api.ApiManager
 import kotlinx.android.synthetic.main.home_activity.*
+
+
 
 
 class HomeActivity : AppCompatActivity(), HomeView {
@@ -26,12 +37,15 @@ class HomeActivity : AppCompatActivity(), HomeView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home_activity)
 
+        setSupportActionBar(toolbar)
+
         // TODO - Check if this will work. The adapter has a cyclic reference to the presenter.
         presenter = HomePresenterImpl(this, adapter, ApiManager)
 
         adapter.presenter = presenter
 
         setupRV()
+        setupSearchView()
 
         // TODO - Check if there's a saved instance.
 
@@ -42,6 +56,46 @@ class HomeActivity : AppCompatActivity(), HomeView {
     override fun onDestroy() {
         presenter.onDestroy()
         super.onDestroy()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_home, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when(item?.itemId) {
+            R.id.action_search -> {
+                searchView.openSearch()
+                true
+            }
+            R.id.action_refresh -> {
+                presenter.removeAll()
+                presenter.loadMovies()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+        if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == Activity.RESULT_OK) {
+            val matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            if (matches != null && matches.size > 0) {
+                val searchWrd = matches[0]
+                if (!TextUtils.isEmpty(searchWrd)) {
+                    searchView.setQuery(searchWrd, false)
+                }
+            }
+        }
+        else super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onBackPressed() {
+        if (searchView.isOpen)
+            searchView.closeSearch()
+        else
+            super.onBackPressed()
     }
 
     // TODO - Issue #8: Save Activity state to avoid multiple downloads.
@@ -58,6 +112,21 @@ class HomeActivity : AppCompatActivity(), HomeView {
         recyclerView.adapter = adapter
         // Listen to the scrolls, and make the magic happen. Infinite scroll.
         recyclerView.addOnScrollListener(presenter.getRvScrollListener(layoutManager))
+    }
+
+    private fun setupSearchView() {
+        searchView.setBackgroundColor(ContextCompat.getColor(this, R.color.searchViewTint))
+        searchView.setOnItemClickListener { _, _, pos, _ -> searchView.setQuery(searchView.getSuggestionAtPosition(pos), false) }
+        searchView.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                Log.d(LOG_TAG, "Query: $query")
+                presenter.removeAll()
+                presenter.searchMovie(query)
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean = false
+        })
     }
 
     /**
@@ -77,11 +146,11 @@ class HomeActivity : AppCompatActivity(), HomeView {
         recyclerView.post(action)
     }
 
-    override fun showErrorMessage(message: String, listener: View.OnClickListener?, @StringRes resId: Int) {
+    override fun showErrorMessage(@StringRes message: Int, listener: View.OnClickListener?, @StringRes resId: Int) {
         val snack = Snackbar.make(homeRoot, message, Snackbar.LENGTH_LONG)
 
         if (listener != null) {
-            snack.setAction(resId, listener)
+            snack.setAction(getString(R.string.action_try_again).toUpperCase(), listener)
         }
 
         snack.show()

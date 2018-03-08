@@ -17,7 +17,7 @@ interface HomeView {
 //    fun loadMovies()
 
     // Displays an error on a Snackbar, and gives the option to retry if the listener isn't null
-    fun showErrorMessage(message: String,
+    fun showErrorMessage(@StringRes message: Int,
                          listener: View.OnClickListener? = null,
                          @StringRes resId: Int = 0)
 }

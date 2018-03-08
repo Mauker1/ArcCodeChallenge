@@ -6,7 +6,8 @@ data class GenreResponse(val genres: List<Genre>)
 
 data class Genre(val id: Int, val name: String)
 
-data class UpcomingMoviesResponse(
+// Changed this to a more generic name since the movie query uses the same JSON as a response.
+data class MoviesResponse(
     val page: Int,
     val results: List<Movie>,
     @Json(name = "total_pages") val totalPages: Int,

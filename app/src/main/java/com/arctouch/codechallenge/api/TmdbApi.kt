@@ -2,19 +2,21 @@ package com.arctouch.codechallenge.api
 
 import com.arctouch.codechallenge.model.GenreResponse
 import com.arctouch.codechallenge.model.Movie
-import com.arctouch.codechallenge.model.UpcomingMoviesResponse
+import com.arctouch.codechallenge.model.MoviesResponse
 import io.reactivex.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import java.util.*
 
 interface TmdbApi {
 
+    // TODO - Move the URL and the API_KEY to BuildConfig or equivalent to address different build types.
     companion object {
         const val URL = "https://api.themoviedb.org/3/"
         const val API_KEY = "1f54bd990f1cdfb230adb312546d765d"
-        const val DEFAULT_LANGUAGE = "en-US"
-        const val DEFAULT_REGION = "BR"
+        val DEFAULT_LANGUAGE: String = Locale.getDefault().toString()
+        val DEFAULT_REGION: String = Locale.getDefault().country
     }
 
     @GET("genre/movie/list")
@@ -29,7 +31,7 @@ interface TmdbApi {
         @Query("language") language: String,
         @Query("page") page: Long,
         @Query("region") region: String
-    ): Observable<UpcomingMoviesResponse>
+    ): Observable<MoviesResponse>
 
     @GET("movie/{id}")
     fun movie(
@@ -37,4 +39,11 @@ interface TmdbApi {
         @Query("api_key") apiKey: String,
         @Query("language") language: String
     ): Observable<Movie>
+
+    @GET("search/movie")
+    fun searchMovie(
+            @Query("api_key") apiKey: String,
+            @Query("language") language: String,
+            @Query("query") query: String
+    ): Observable<MoviesResponse>
 }

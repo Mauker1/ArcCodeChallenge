@@ -6,10 +6,23 @@
     android:layout_height="match_parent"
     android:id="@+id/homeRoot">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:background="@color/colorPrimary"
+        tools:title="@string/app_name"
+        android:theme="@style/AppTheme.AppBarOverlay"
+        app:popupTheme="@style/AppTheme.PopupOverlay" />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
         android:clipToPadding="false"
         android:paddingBottom="12dp"
         android:paddingTop="12dp"
@@ -21,7 +34,15 @@
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/toolbar"
+        android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
-        tools:visibility="gone" />
+        tools:visibility="visible" />
+
+    <br.com.mauker.materialsearchview.MaterialSearchView
+        android:id="@+id/searchView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@style/MaterialSearchViewStyle" />
 
 </RelativeLayout>

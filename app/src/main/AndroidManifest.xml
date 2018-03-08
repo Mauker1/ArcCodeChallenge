@@ -11,7 +11,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".home.HomeActivity" >
+        <activity android:name=".home.HomeActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,5 +27,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.arctouch.codechallenge.home.HomeActivity" />
         </activity>
+
+        <provider
+            android:name="br.com.mauker.materialsearchview.db.HistoryProvider"
+            android:authorities="com.arctouch.mauker.codechallenge.db"
+            android:exported="false"
+            android:protectionLevel="signature"
+            android:syncable="true"/>
     </application>
 </manifest>

@@ -14,6 +14,7 @@ interface HomePresenter {
     fun onDestroy()
     fun loadGenres()
     fun loadMovies()
+    fun searchMovie(query: String)
 
     fun getRvScrollListener(layoutManager: LinearLayoutManager): RecyclerView.OnScrollListener
 

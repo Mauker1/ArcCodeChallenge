@@ -3,11 +3,12 @@ package com.arctouch.codechallenge.home
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
+import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.api.ApiManager
 import com.arctouch.codechallenge.api.TmdbApi
 import com.arctouch.codechallenge.data.Cache
 import com.arctouch.codechallenge.model.Movie
-import com.arctouch.codechallenge.model.UpcomingMoviesResponse
+import com.arctouch.codechallenge.model.MoviesResponse
 import com.arctouch.codechallenge.util.MovieImageUrlBuilder
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -55,41 +56,53 @@ class HomePresenterImpl(
      * Method that will fetch the movies from the API, and display the results on the RV.
      */
     override fun loadMovies() {
-        if (curPage == 1L)
-            homeView?.showProgress()
-        else if (curPage > 1L)
-            homeView?.postOnRv(Runnable { addFooter() })
+        if (!isLoading) {
+            if (curPage == 1L)
+                homeView?.showProgress()
+            else if (curPage > 1L)
+                homeView?.postOnRv(Runnable { addFooter() })
 
-        if (!isLastPage) {
-            isLoading = true
-            model.api.upcomingMovies(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, curPage, TmdbApi.DEFAULT_REGION)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .retry(3)
-                    .onErrorReturn {
-                        it.stackTrace
-                        UpcomingMoviesResponse(1, ArrayList(), 1, 0)
-                    }
-                    .subscribe {
-                        val moviesWithGenres = it.results.map { movie ->
-                            movie.copy(genres = Cache.genres.filter { movie.genreIds?.contains(it.id) == true })
+            if (!isLastPage) {
+                isLoading = true
+                model.api.upcomingMovies(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, curPage, TmdbApi.DEFAULT_REGION)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .retry(3)
+                        .onErrorReturn {
+                            it.stackTrace
+                            MoviesResponse(1, ArrayList(), 1, 0)
                         }
+                        .subscribe {
+                            isLoading = false
 
-                        // Check if we're past the first page. Which means there's a footer to be removed.
-                        if (curPage > 1L) removeFooter()
+                            if (it.totalResults > 0) {
+                                val moviesWithGenres = it.results.map { movie ->
+                                    movie.copy(genres = Cache.genres.filter { movie.genreIds?.contains(it.id) == true })
+                                }
 
-                        // Check if it's the last page
-                        isLastPage = it.totalPages <= it.page
-                        // Increment the page counter if it's not the last page yet.
-                        if (!isLastPage)
-                            curPage = it.page + 1L
-                        // Insert the results on the RV.
-                        addAll(moviesWithGenres)
+                                // Check if we're past the first page. Which means there's a footer to be removed.
+                                if (curPage > 1L) removeFooter()
 
-                        isLoading = false
+                                // Check if it's the last page
+                                isLastPage = it.totalPages <= it.page
+                                // Increment the page counter if it's not the last page yet.
+                                if (!isLastPage)
+                                    curPage = it.page + 1L
+                                // Insert the results on the RV.
+                                addAll(moviesWithGenres)
 
-                        homeView?.hideProgress()
-                    }
+                                homeView?.hideProgress()
+                            }
+                            else {
+                                homeView?.hideProgress()
+                                homeView?.showErrorMessage(
+                                        R.string.no_upcoming_results,
+                                        View.OnClickListener { loadMovies() },
+                                        R.string.action_try_again
+                                )
+                            }
+                        }// End subscribe
+            }
         }
     }
 
@@ -103,6 +116,34 @@ class HomePresenterImpl(
                     Cache.cacheGenres(it.genres)
                     loadMovies()
                 }
+    }
+
+    /**
+     * Searchs for a movie based on a String query.
+      */
+    override fun searchMovie(query: String) {
+        if (!isLoading) {
+            homeView?.showProgress()
+            isLoading = true
+
+            model.api.searchMovie(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, query)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .retry(3)
+                    .subscribe {
+
+                        isLoading = false
+
+                        if (it.totalResults > 0) {
+                            addAll(it.results)
+                            homeView?.hideProgress()
+                        }
+                        else {
+                            homeView?.hideProgress()
+                            homeView?.showErrorMessage(R.string.no_query_results)
+                        }
+                    }
+        }
     }
 
     override fun getRvScrollListener(layoutManager: LinearLayoutManager): RecyclerView.OnScrollListener {
@@ -185,10 +226,16 @@ class HomePresenterImpl(
      * This method will clear the AdapterModel.
      */
     override fun removeAll() {
-        isLoadingOnFooter = false
+        // Only remove the data if it's not loading anything new.
+        if (!isLoading) {
+            isLoadingOnFooter = false
+            curPage = 1L
+            isLoading = false
+            isLastPage = false
 
-        while (adapterModel.size > 0)
-            removeMovie(adapterModel[0])
+            while (adapterModel.size > 0)
+                removeMovie(adapterModel[0])
+        }
     }
 
     override fun getMoviePos(movie: Movie): Int = adapterModel.indexOf(movie)

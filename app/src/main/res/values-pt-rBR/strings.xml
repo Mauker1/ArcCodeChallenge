@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Code Challenge</string>
+    <string name="movie_and_genres">%s - %s</string>
+
+    <!-- Detail Activity strings -->
+    <string name="stars_and_votes">%1$.1f (%2$d)</string>
+    <string name="title_activity_detail">DetailActivity</string>
+    <string name="act_detail_overview_title">Sinopse</string>
+    <string name="act_detail_release_date_title">Data de lançamento</string>
+
+    <string name="action_search">Buscar</string>
+    <string name="action_refresh">Atualizar</string>
+    <string name="action_try_again">Tentar novamente</string>
+
+    <string name="no_upcoming_results">Não foram encontrados lançamentos.</string>
+    <string name="no_query_results">Nenhum filme foi encontrado.</string>
+
+    <!-- Material Search View Strings -->
+    <string name="search_hint_prompt">Buscar filme&#8230;</string>
+    <string name="voice_hint_prompt">Diga o nome de um filme</string>
+</resources>

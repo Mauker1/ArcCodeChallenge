@@ -30,7 +30,9 @@ class HomeActivity : AppCompatActivity(), HomeView {
     private var presenter: HomePresenter? = null
     private val adapter = HomeAdapter()
 
-    // Activity lifecycle
+    /**
+     * Activity lifecycle
+      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home_activity)

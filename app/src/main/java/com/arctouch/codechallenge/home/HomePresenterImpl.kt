@@ -40,6 +40,8 @@ class HomePresenterImpl(
     private var isLoading = false
     private var isLastPage = false
 
+    private var isSearch = false
+
     // Flag that will indicate whether the footer has been added or not.
     private var isLoadingOnFooter = false
 
@@ -71,6 +73,7 @@ class HomePresenterImpl(
      */
     override fun loadMovies() {
         if (!isLoading) {
+            isSearch = false
             if (curPage == 1L)
                 homeView?.showProgress()
             else if (curPage > 1L)
@@ -139,6 +142,7 @@ class HomePresenterImpl(
         if (!isLoading) {
             homeView?.showProgress()
             isLoading = true
+            isSearch = true
 
             model.api.searchMovie(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, query)
                     .subscribeOn(Schedulers.io())
@@ -167,7 +171,8 @@ class HomePresenterImpl(
             override fun getTotalPageCount(): Int = if (numPages > 0) numPages else maxPages
 
             override fun loadMoreItems() {
-                loadMovies()
+                if (!isSearch)
+                    loadMovies()
             }
         }
     }

@@ -23,7 +23,7 @@ abstract class RvScrollListener(private val layoutManager: LinearLayoutManager) 
         if (!isLoading() && !isLastPage()) {
             if ( (visibleItemCount + firstVisibleItemPosition) >= totalItemCount
                 && totalItemCount >= 0 ) {
-                if (BuildConfig.DEBUG) Log.d("TAG", "end of scroll, trying to fetch more items.")
+                if (BuildConfig.DEBUG) Log.d(LOG_TAG, "end of scroll, trying to fetch more items.")
                 loadMoreItems()
             }
         }
@@ -33,4 +33,8 @@ abstract class RvScrollListener(private val layoutManager: LinearLayoutManager) 
     abstract fun isLastPage() : Boolean
     abstract fun getTotalPageCount() : Int
     abstract fun loadMoreItems()
+
+    companion object {
+        private val LOG_TAG = RvScrollListener::class.java.simpleName
+    }
 }

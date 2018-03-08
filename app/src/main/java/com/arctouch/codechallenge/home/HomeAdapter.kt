@@ -1,6 +1,5 @@
 package com.arctouch.codechallenge.home
 
-import android.content.Context
 import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -9,38 +8,40 @@ import android.view.View
 import android.view.ViewGroup
 import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.detail.DetailActivity
-import com.arctouch.codechallenge.model.Movie
-import com.arctouch.codechallenge.util.MovieImageUrlBuilder
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.movie_item.view.*
 
-class HomeAdapter(private val movies: MutableList<Movie>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class HomeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), HomeAdapterView {
 
-    class MovieViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-        private val movieImageUrlBuilder = MovieImageUrlBuilder()
-
-        fun bind(movie: Movie) {
-            itemView.titleTextView.text = movie.title
-            itemView.genresTextView.text = movie.genres?.joinToString(separator = ", ") { it.name }
-            itemView.releaseDateTextView.text = movie.releaseDate
-
-            Glide.with(itemView)
-                .load(movie.posterPath?.let { movieImageUrlBuilder.buildPosterUrl(it) })
-                .apply(RequestOptions().placeholder(R.drawable.ic_image_placeholder))
-                .into(itemView.posterImageView)
-
-            itemView.setOnClickListener {
-                onClick(it.context, movie)
-            }
+    class MovieViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), MovieRowView {
+        override fun setTitle(title: String) {
+            itemView.titleTextView.text = title
         }
 
-        private fun onClick(context: Context, movie: Movie) {
+        override fun setGenres(genres: String) {
+            itemView.genresTextView.text = genres
+        }
+
+        override fun setReleaseDate(releaseDate: String) {
+            itemView.releaseDateTextView.text = releaseDate
+        }
+
+        override fun setPosterImage(url: String) {
+            Glide.with(itemView)
+                    .load(url)
+                    .apply(RequestOptions().placeholder(R.drawable.ic_image_placeholder))
+                    .into(itemView.posterImageView)
+        }
+
+        override fun setClickListener(listener: View.OnClickListener) = itemView.setOnClickListener(listener)
+
+        override fun onClick(movieId: Long) {
             Log.d(LOG_TAG, "onClick()")
+            val context = itemView.context
             val it = Intent(context, DetailActivity::class.java)
 
-            it.putExtra(DetailActivity.EXTRA_MOVIE_ID, movie.id.toLong())
+            it.putExtra(DetailActivity.EXTRA_MOVIE_ID, movieId)
 
             context.startActivity(it)
         }
@@ -49,9 +50,7 @@ class HomeAdapter(private val movies: MutableList<Movie>) : RecyclerView.Adapter
     // Dummy ViewHolder for the footer loading progress bar.
     class LoadingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    // Flag that will indicate wheter the footer has been added or not.
-    private var isLoadingOnFooter = false
-
+    lateinit var presenter: HomePresenter
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when(viewType) {
@@ -61,77 +60,34 @@ class HomeAdapter(private val movies: MutableList<Movie>) : RecyclerView.Adapter
     }
 
     override fun getItemViewType(position: Int): Int =
-            if (position == movies.size - 1 && isLoadingOnFooter) ITEM_LOADING else ITEM_DEFAULT
+            if (position == presenter.getMoviesCount() - 1 && presenter.isLoadingOnFooter()) ITEM_LOADING else ITEM_DEFAULT
 
-    override fun getItemCount() = movies.size
+    override fun getItemCount() = presenter.getMoviesCount()
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val movie = movies[position]
-
         // If we decide to add more view types later, add them here.
         when(getItemViewType(position)) {
-            ITEM_DEFAULT -> (holder as MovieViewHolder).bind(movie)
+            ITEM_DEFAULT -> presenter.onBindMovie(position, (holder as MovieViewHolder))
             // The ITEM_LOADING will basically show the progress bar, so I'm not binding it here.
         }
     }
 
-    // Adapter helper methods (Sort of a CRUD)
+    /**
+     * HomeAdapterView methods
+     */
 
-    fun add(movie: Movie) {
-        movies.add(movie)
-        notifyItemInserted(movies.size - 1)
-    }
+    override fun notifyInserted(position: Int) = notifyItemInserted(position)
 
-    fun addAll(newMovies: List<Movie>) {
-        for (movie in newMovies) {
-            add(movie)
-        }
-    }
+    override fun notifyRangeInserted(startPos: Int, count: Int) = notifyItemRangeInserted(startPos, count)
 
-    fun remove(movie: Movie) {
-        val pos = movies.indexOf(movie)
+    override fun notifyRemoved(position: Int) = notifyItemRemoved(position)
 
-        if (pos > -1) {
-            movies.removeAt(pos)
-            notifyItemRemoved(pos)
-        }
-    }
+    override fun notifyRemovedRage(startPos: Int, count: Int) = notifyItemRangeRemoved(startPos, count)
 
-    fun removeAtPos(position: Int) {
-        if (position < movies.size) {
-            movies.removeAt(position)
-            notifyItemRemoved(position)
-        }
-    }
-
-    fun clearAll() {
-        isLoadingOnFooter = false
-
-        while (movies.size > 0) {
-            remove(movies[0])
-        }
-    }
-
-    fun addFooter() {
-        isLoadingOnFooter = true
-
-        // Add a dummy movie object on the end of the list.
-        add(Movie())
-    }
-
-    fun removeFooter() {
-        isLoadingOnFooter = false
-
-        // Check if there are any items on the list.
-        if (!movies.isEmpty()) {
-            val pos = movies.size - 1
-
-            removeAtPos(pos)
-        }
-    }
+    // End section
 
     companion object {
-        val LOG_TAG = HomeAdapter::class.java.simpleName
+        val LOG_TAG: String = HomeAdapter::class.java.simpleName
 
         private const val ITEM_DEFAULT = 0
         private const val ITEM_LOADING = 1

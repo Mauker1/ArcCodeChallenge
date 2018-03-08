@@ -12,6 +12,7 @@ import com.arctouch.codechallenge.model.Movie
 interface HomePresenter {
 
     fun onDestroy()
+    fun loadGenres()
     fun loadMovies()
 
     fun getRvScrollListener(layoutManager: LinearLayoutManager): RecyclerView.OnScrollListener

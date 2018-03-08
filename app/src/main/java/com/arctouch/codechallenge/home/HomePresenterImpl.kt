@@ -93,6 +93,18 @@ class HomePresenterImpl(
         }
     }
 
+    override fun loadGenres() {
+        homeView?.showProgress()
+        model.api.genres(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .retry(3)
+                .subscribe {
+                    Cache.cacheGenres(it.genres)
+                    loadMovies()
+                }
+    }
+
     override fun getRvScrollListener(layoutManager: LinearLayoutManager): RecyclerView.OnScrollListener {
         return object: RvScrollListener(layoutManager) {
             override fun isLoading(): Boolean = isLoading

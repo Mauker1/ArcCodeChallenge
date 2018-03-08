@@ -35,8 +35,8 @@ class HomeActivity : AppCompatActivity(), HomeView {
 
         // TODO - Check if there's a saved instance.
 
-        // Load the movies for the first time (First page)
-        presenter.loadMovies()
+        // Load the genres. This method will load the movies afterwards.
+        presenter.loadGenres()
     }
 
     override fun onDestroy() {

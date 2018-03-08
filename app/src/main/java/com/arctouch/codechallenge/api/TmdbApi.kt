@@ -1,5 +1,6 @@
 package com.arctouch.codechallenge.api
 
+import com.arctouch.codechallenge.BuildConfig
 import com.arctouch.codechallenge.model.GenreResponse
 import com.arctouch.codechallenge.model.Movie
 import com.arctouch.codechallenge.model.MoviesResponse
@@ -11,10 +12,9 @@ import java.util.*
 
 interface TmdbApi {
 
-    // TODO - Move the URL and the API_KEY to BuildConfig or equivalent to address different build types.
     companion object {
-        const val URL = "https://api.themoviedb.org/3/"
-        const val API_KEY = "1f54bd990f1cdfb230adb312546d765d"
+        const val URL = BuildConfig.BASE_URL
+        const val API_KEY = BuildConfig.API_KEY
         val DEFAULT_LANGUAGE: String = Locale.getDefault().toString()
         val DEFAULT_REGION: String = Locale.getDefault().country
     }

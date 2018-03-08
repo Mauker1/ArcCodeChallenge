@@ -4,6 +4,10 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+def STRING = "String"
+
+def TMDB_API_KEY = '"' + tmdbApiKey + '"'
+
 android {
     compileSdkVersion 27
     defaultConfig {
@@ -18,6 +22,17 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            buildConfigField STRING, "API_KEY", TMDB_API_KEY
+            buildConfigField STRING, "BASE_URL", "\"https://api.themoviedb.org/3/\""
+        }
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            // For now, using the same values as the release build.
+            buildConfigField STRING, "API_KEY", TMDB_API_KEY
+            buildConfigField STRING, "BASE_URL", "\"https://api.themoviedb.org/3/\""
         }
     }
 }

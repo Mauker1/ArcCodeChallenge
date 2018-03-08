@@ -21,15 +21,13 @@ import com.arctouch.codechallenge.api.ApiManager
 import kotlinx.android.synthetic.main.home_activity.*
 
 
-
-
 class HomeActivity : AppCompatActivity(), HomeView {
 
     companion object {
-        val LOG_TAG = HomeActivity::class.java.simpleName
+        val LOG_TAG: String = HomeActivity::class.java.simpleName
     }
 
-    private lateinit var presenter: HomePresenter
+    private var presenter: HomePresenter? = null
     private val adapter = HomeAdapter()
 
     // Activity lifecycle
@@ -39,22 +37,18 @@ class HomeActivity : AppCompatActivity(), HomeView {
 
         setSupportActionBar(toolbar)
 
-        // TODO - Check if this will work. The adapter has a cyclic reference to the presenter.
-        presenter = HomePresenterImpl(this, adapter, ApiManager)
-
-        adapter.presenter = presenter
-
+        setupPresenter()
         setupRV()
         setupSearchView()
 
-        // TODO - Check if there's a saved instance.
-
-        // Load the genres. This method will load the movies afterwards.
-        presenter.loadGenres()
+        if (savedInstanceState == null) {
+            // Load the genres. This method will load the movies afterwards.
+            presenter?.loadGenres()
+        }
     }
 
     override fun onDestroy() {
-        presenter.onDestroy()
+        presenter?.onDestroy()
         super.onDestroy()
     }
 
@@ -70,14 +64,17 @@ class HomeActivity : AppCompatActivity(), HomeView {
                 true
             }
             R.id.action_refresh -> {
-                presenter.removeAll()
-                presenter.loadMovies()
+                presenter?.removeAll()
+                presenter?.loadMovies()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
+    /**
+     * Using this method to get the audio query for the search view.
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == Activity.RESULT_OK) {
             val matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
@@ -98,9 +95,33 @@ class HomeActivity : AppCompatActivity(), HomeView {
             super.onBackPressed()
     }
 
-    // TODO - Issue #8: Save Activity state to avoid multiple downloads.
+    /**
+     * Save the presenter instance to avoid downloading the data again.
+     */
+    override fun onRetainCustomNonConfigurationInstance(): Any {
+        val myPresenter = presenter
+        return if (presenter != null) myPresenter as HomePresenter else super.onRetainCustomNonConfigurationInstance()
+    }
 
     // End section
+
+    /**
+     * Load the presenter instance if it was saved before. Or create a new one.
+     */
+    private fun setupPresenter() {
+        presenter = lastCustomNonConfigurationInstance as HomePresenter?
+
+        if (presenter == null) {
+            presenter = HomePresenterImpl(this, adapter, ApiManager)
+        }
+        else {
+            presenter?.attachView(this)
+            presenter?.attachAdapterView(adapter)
+            presenter?.onRestore()
+        }
+
+        adapter.presenter = presenter as HomePresenter
+    }
 
     /**
      * Setup the Recycler View, adding the LayoutManager and setting the scroll listener.
@@ -111,7 +132,7 @@ class HomeActivity : AppCompatActivity(), HomeView {
         recyclerView.itemAnimator = DefaultItemAnimator()
         recyclerView.adapter = adapter
         // Listen to the scrolls, and make the magic happen. Infinite scroll.
-        recyclerView.addOnScrollListener(presenter.getRvScrollListener(layoutManager))
+        recyclerView.addOnScrollListener(presenter?.getRvScrollListener(layoutManager))
     }
 
     private fun setupSearchView() {
@@ -120,8 +141,8 @@ class HomeActivity : AppCompatActivity(), HomeView {
         searchView.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 Log.d(LOG_TAG, "Query: $query")
-                presenter.removeAll()
-                presenter.searchMovie(query)
+                presenter?.removeAll()
+                presenter?.searchMovie(query)
                 return false
             }
 

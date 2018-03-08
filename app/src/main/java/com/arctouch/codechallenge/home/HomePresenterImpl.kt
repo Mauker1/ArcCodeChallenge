@@ -2,6 +2,7 @@ package com.arctouch.codechallenge.home
 
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.View
 import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.api.ApiManager
@@ -50,6 +51,19 @@ class HomePresenterImpl(
     override fun onDestroy() {
         homeView = null
         adapterView = null
+    }
+
+    override fun onRestore() {
+        Log.d("tag", "onRestore presenter")
+        homeView?.hideProgress()
+    }
+
+    override fun attachView(view: HomeView) {
+        homeView = view
+    }
+
+    override fun attachAdapterView(view: HomeAdapterView) {
+        adapterView = view
     }
 
     /**

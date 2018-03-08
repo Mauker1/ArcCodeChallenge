@@ -12,6 +12,10 @@ import com.arctouch.codechallenge.model.Movie
 interface HomePresenter {
 
     fun onDestroy()
+    fun onRestore()
+    fun attachView(view: HomeView)
+    fun attachAdapterView(view: HomeAdapterView)
+
     fun loadGenres()
     fun loadMovies()
     fun searchMovie(query: String)
